@@ -2,7 +2,6 @@ package com.twistedeqations.dagger2tutorial.screens.home;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.AttributeSet;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -21,6 +20,7 @@ import butterknife.ButterKnife;
 
 public class RepoListItem extends FrameLayout {
 
+    private final Picasso picasso;
     @BindView(R.id.user_avatar)
     ImageView avatarImage;
 
@@ -44,23 +44,9 @@ public class RepoListItem extends FrameLayout {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.fullDate();
 
-    public RepoListItem(Context context) {
+    public RepoListItem(Context context, Picasso picasso) {
         super(context);
-        init();
-    }
-
-    public RepoListItem(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public RepoListItem(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    public RepoListItem(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
+        this.picasso = picasso;
         init();
     }
 
@@ -81,9 +67,9 @@ public class RepoListItem extends FrameLayout {
         forks.setText(String.format(locale, "%d", githubRepo.forksCount));
 
         updatedAt.setText(getResources()
-                .getString(R.string.last_pushed, DATE_TIME_FORMATTER.print(githubRepo.updatedAt)));
+                                  .getString(R.string.last_pushed, DATE_TIME_FORMATTER.print(githubRepo.updatedAt)));
 
-        Picasso.with(getContext())
+        picasso
                 .load(githubRepo.owner.avatarUrl)
                 .placeholder(R.drawable.ic_person_black_24dp)
                 .into(avatarImage);

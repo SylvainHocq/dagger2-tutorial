@@ -2,45 +2,104 @@ package com.twistedeqations.dagger2tutorial;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 
-import com.fatboyindustrial.gsonjodatime.Converters;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.jakewharton.picasso.OkHttp3Downloader;
+import com.squareup.picasso.Picasso;
 import com.twistedeqations.dagger2tutorial.network.DateTimeConverter;
 import com.twistedeqations.dagger2tutorial.network.GithubService;
 
 import org.joda.time.DateTime;
 
+import java.io.File;
+
+import okhttp3.Cache;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-
-import static com.fatboyindustrial.gsonjodatime.Converters.DATE_TIME_TYPE;
+import timber.log.Timber;
 
 public class GithubApplication extends Application {
 
-  public static GithubApplication get(Activity activity) {
-    return (GithubApplication) activity.getApplication();
-  }
+    private Picasso picasso;
 
-  private GithubService githubService;
+    public static GithubApplication get(Activity activity) {
+        return (GithubApplication)activity.getApplication();
+    }
 
-  @Override
-  public void onCreate() {
-    super.onCreate();
+    private GithubService githubService;
 
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.registerTypeAdapter(DateTime.class, new DateTimeConverter());
-    Gson gson = gsonBuilder.create();
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
-    Retrofit gitHubRetrofit = new Retrofit.Builder()
-      .addConverterFactory(GsonConverterFactory.create(gson))
-      .baseUrl("https://api.github.com/")
-      .build();
+        //           Activity
+        //           /       \
+        // GithubService      Picasso
+        //      /              /
+        // retrofit       OkHttp3Downloader
+        //     /    \     /
+        //   gson    okhttp
+        //            /    \
+        //         logger  cache
+        //          /         \
+        //        timber      file
 
-    githubService = gitHubRetrofit.create(GithubService.class);
-  }
+        // CONTEXT
+        Context context = this;
 
-  public GithubService getGithubService() {
-    return githubService;
-  }
+        // NETWORK
+        Timber.plant(new Timber.DebugTree());
+        Interceptor interceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            @Override
+            public void log(String message) {
+                Timber.i(message);
+            }
+        });
+
+
+        File cacheFile = new File(context.getCacheDir(), "okhttp_cache");
+        cacheFile.mkdirs();
+
+        Cache cache = new Cache(cacheFile, 10 * 1024 * 1024);
+
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(interceptor)
+                .cache(cache)
+                .build();
+
+
+        // PICASSO
+        picasso = new Picasso.Builder(context)
+                .downloader(new OkHttp3Downloader(okHttpClient))
+                .build();
+
+        // GSON
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(DateTime.class, new DateTimeConverter());
+        Gson gson = gsonBuilder.create();
+
+        // CLIENT
+        Retrofit gitHubRetrofit = new Retrofit.Builder()
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .client(okHttpClient)
+                .baseUrl("https://api.github.com/")
+                .build();
+
+        //Picasso.setSingletonInstance(picasso);   -> DIRTY !!!
+
+        githubService = gitHubRetrofit.create(GithubService.class);
+    }
+
+    public GithubService getGithubService() {
+        return githubService;
+    }
+
+    public Picasso getPicasso() {
+        return picasso;
+    }
 }
