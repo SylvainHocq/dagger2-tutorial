@@ -19,8 +19,6 @@ import okhttp3.Cache;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 import timber.log.Timber;
 
 public class GithubApplication extends Application {
@@ -52,25 +50,7 @@ public class GithubApplication extends Application {
         // CONTEXT
         Context context = this;
 
-        // NETWORK
         Timber.plant(new Timber.DebugTree());
-        Interceptor interceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-            @Override
-            public void log(String message) {
-                Timber.i(message);
-            }
-        });
-
-
-        File cacheFile = new File(context.getCacheDir(), "okhttp_cache");
-        cacheFile.mkdirs();
-
-        Cache cache = new Cache(cacheFile, 10 * 1024 * 1024);
-
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .addInterceptor(interceptor)
-                .cache(cache)
-                .build();
 
 
         // PICASSO
@@ -83,16 +63,6 @@ public class GithubApplication extends Application {
         gsonBuilder.registerTypeAdapter(DateTime.class, new DateTimeConverter());
         Gson gson = gsonBuilder.create();
 
-        // CLIENT
-        Retrofit gitHubRetrofit = new Retrofit.Builder()
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .client(okHttpClient)
-                .baseUrl("https://api.github.com/")
-                .build();
-
-        //Picasso.setSingletonInstance(picasso);   -> DIRTY !!!
-
-        githubService = gitHubRetrofit.create(GithubService.class);
     }
 
     public GithubService getGithubService() {
