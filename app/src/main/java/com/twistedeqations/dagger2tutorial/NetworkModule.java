@@ -16,6 +16,7 @@ import timber.log.Timber;
 public class NetworkModule {
 
     @Provides
+    @GithubApplicationScope
     public OkHttpClient okHttpClient(Interceptor interceptor, Cache cache) {
         return new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
@@ -24,21 +25,26 @@ public class NetworkModule {
     }
 
     @Provides
+    @GithubApplicationScope
     public Interceptor interceptor() {
-        return new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
             @Override
             public void log(String message) {
                 Timber.i(message);
             }
         });
+        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
+        return httpLoggingInterceptor;
     }
 
     @Provides
+    @GithubApplicationScope
     public Cache cache(File cacheFile) {
         return new Cache(cacheFile, 10 * 1024 * 1024);
     }
 
     @Provides
+    @GithubApplicationScope
     public File cacheFile(Context context) {
         return new File(context.getCacheDir(), "okhttp_cache");
     }
