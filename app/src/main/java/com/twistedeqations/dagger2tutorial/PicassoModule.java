@@ -14,7 +14,7 @@ public class PicassoModule {
 
     @Provides
     @GithubApplicationScope
-    public Picasso picasso(Context context, OkHttp3Downloader okHttp3Downloader) {
+    public Picasso picasso(@ApplicationContext Context context, OkHttp3Downloader okHttp3Downloader) {
         return new Picasso.Builder(context)
                 .downloader(okHttp3Downloader)
                 .build();

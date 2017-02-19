@@ -6,7 +6,7 @@ import com.twistedeqations.dagger2tutorial.network.GithubService;
 import dagger.Component;
 
 @GithubApplicationScope
-@Component(modules = {GithubServiceModule.class, PicassoModule.class})
+@Component(modules = {GithubServiceModule.class, PicassoModule.class, ActivityModule.class})
 public interface GithubApplicationComponent {
 
     GithubService getGithubService();

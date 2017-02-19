@@ -1,22 +1,22 @@
 package com.twistedeqations.dagger2tutorial;
 
+import android.app.Activity;
 import android.content.Context;
 
 import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class ContextModule {
+public class ActivityModule {
 
     private Context context;
 
-    public ContextModule(Context context) {
-        this.context = context.getApplicationContext();
+    public ActivityModule(Activity context) {
+        this.context = context;
     }
 
     @Provides
     @GithubApplicationScope
-    @ApplicationContext
     public Context context(){
         return context;
     }
