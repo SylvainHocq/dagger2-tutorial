@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
 import com.twistedeqations.dagger2tutorial.GithubApplication;
 import com.twistedeqations.dagger2tutorial.R;
 import com.twistedeqations.dagger2tutorial.models.GithubRepo;
@@ -25,12 +24,9 @@ public class HomeActivity extends AppCompatActivity {
     @BindView(R.id.repo_home_list)
     ListView listView;
 
-    GithubService githubService;
-    Picasso       picasso;
 
     Call<List<GithubRepo>> reposCall;
 
-    AdapterRepos adapterRepos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,12 +34,16 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         ButterKnife.bind(this);
 
-        githubService = GithubApplication.get(this).getGithubService();
-        picasso = GithubApplication.get(this).getPicasso();
+        HomeActivityComponent component = DaggerHomeActivityComponent
+                .builder()
+                .githubApplicationComponent(GithubApplication.get(this).getApplicationComponent())
+                .homeActivityModule(new HomeActivityModule(this))
+                .build();
 
-        adapterRepos = new AdapterRepos(this, picasso);
+        final AdapterRepos adapterRepos = component.adapterRepos();
         listView.setAdapter(adapterRepos);
 
+        GithubService githubService = component.githubService();
         reposCall = githubService.getAllRepos();
         reposCall.enqueue(new Callback<List<GithubRepo>>() {
             @Override

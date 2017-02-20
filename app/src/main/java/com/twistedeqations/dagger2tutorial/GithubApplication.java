@@ -14,6 +14,7 @@ public class GithubApplication extends Application {
 
     public static final String DAGGER_2 = "dagger2";
     private Picasso picasso;
+    private GithubApplicationComponent applicationComponent;
 
     public static GithubApplication get(Activity activity) {
         return (GithubApplication) activity.getApplication();
@@ -42,7 +43,10 @@ public class GithubApplication extends Application {
 
         Timber.plant(new Timber.DebugTree());
 
-        GithubApplicationComponent applicationComponent = DaggerGithubApplicationComponent
+        //                .githubServiceModule(new GithubServiceModule())   //not necessary
+//                .networkModule(new NetworkModule())               //not necessary
+//                .picassoModule(new PicassoModule())               //not necessary
+        applicationComponent = DaggerGithubApplicationComponent
                 .builder()
                 .contextModule(new ContextModule(this))
                 //                .githubServiceModule(new GithubServiceModule())   //not necessary
@@ -64,11 +68,7 @@ public class GithubApplication extends Application {
 
     }
 
-    public GithubService getGithubService() {
-        return githubService;
-    }
-
-    public Picasso getPicasso() {
-        return picasso;
+    public GithubApplicationComponent getApplicationComponent() {
+        return applicationComponent;
     }
 }
